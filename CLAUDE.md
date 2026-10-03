@@ -32,3 +32,7 @@ This repository contains **no source code, build system, tests, or README** — 
   The u16/u8 table words around offsets 500–640 (probably the inventory; not decoded) reverse cleanly.
 - **Tail / `BASLUS-20184` file:** the 52-byte PS2 settings file corresponds to the first 52 bytes of the PS3 308-byte tail (the rest is zero); byte 15 is `01` in both (not swapped), while the word at 48 is `1` on PS2 and `6` on PS3 (likely different settings, not just endianness).
 - The PS3 side adds `PARAM.SFO`/PNGs and (on real hardware) likely a signature/hash; PS2 adds `icon.sys`/`.ico`.
+
+## Converter
+
+`ps2_to_ps3.py SRC_DIR OUT_DIR` (stdlib only) implements the rules above; header, tail, `PARAM.SFO` and PNGs are copied from `PS3/NPUB304670/`. Check against the same-state pair: output vs `PS3/NPUB304670/DATA0.DAT` differs only at slot offsets 468, 2052, 2060, 2064, 2084 (the known unexplained words). Untested on real PS3/RPCS3.
