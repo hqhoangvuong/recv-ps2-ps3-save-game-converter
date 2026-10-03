@@ -24,11 +24,11 @@ This repository contains **no source code, build system, tests, or README** — 
 - **Not swapped:** word at offset 8 is four u8 fields (`00 00 01 00` is identical on both; across PS2 slots byte 9 and 10 vary, e.g. `00 04 08 00`, `00 03 0b 00`). Any u8 arrays/strings must be left as-is, so a blanket word swap is wrong — a per-field map is needed.
 - **Slot header:** u32 @0 = `0x0a` in every slot (version/magic); u32 @4 = slot id (PS2 slots hold 1,2,4,5,6,7,8,9 — slot 0 → 1, and ids are not contiguous at slot 3).
 - **Checksum (PS2, verified on all 8 populated slots):** u32 LE at offset 2100 = sum of bytes `[0, 2100)` & 0xFFFF. The PS3 sample's slot 0 has **0** there (its byte sum is 0x147b), so PS3 does not store this checksum at the same place — don't assume it is needed or absent without testing in RPCS3/hardware.
-- **Same-state pair (`PS2/BASLUS-20184-Same-Save-As-PS3/SAVEDATA-00` vs `DATA0.DAT` slot 0; first typewriter, Prison B1, 30 handgun bullets/knife/lighter/manual):** of the 36 non-zero words, 29 are exact 4-byte reversals, so the layout/endianness claim above is confirmed. The rest:
+- **Same-state pair (`PS2/BASLUS-20184-Same-Save-As-PS3/SAVEDATA-00` vs `DATA0.DAT` slot 0; first typewriter, Prison B1, 30 handgun bullets/knife/lighter/manual):** of the 37 non-zero words, 29 are exact 4-byte reversals, so the layout/endianness claim above is confirmed. The rest:
   - offset 8 (u8 ×4) and offset 2068 (`01 00 00 00`/`01 00 00 00` — identical bytes, so also not swapped; likely u8 flags).
   - offset 468: PS2 `00 00 00 08` vs PS3 `48 00 00 00` — a reversal would give `08 00 00 00`; PS3 has an extra 0x40 bit set (unexplained, possibly an HD-version flag).
   - offsets 2052, 2060 (float-looking: 8.5 vs ≈8.66, −24.04 vs ≈−23.09), 2064, 2084: differ in value. Both saves are at the same typewriter but were taken separately, so these are probably timers/counters/position values, not layout — unconfirmed. Offsets 2052–2084 hold the same kind of fields in both.
   - offset 2100: PS2 checksum (stored 5023 = 0x139f, again equal to the byte sum) vs 0 on PS3.
-  The inventory (items/ammo) is encoded in the tables around offsets 500–640 (u16/u8 pairs); those words reverse cleanly and no inventory-related difference exists between the consoles.
+  The u16/u8 table words around offsets 500–640 (probably the inventory; not decoded) reverse cleanly.
 - **Tail / `BASLUS-20184` file:** the 52-byte PS2 settings file corresponds to the first 52 bytes of the PS3 308-byte tail (the rest is zero); byte 15 is `01` in both (not swapped), while the word at 48 is `1` on PS2 and `6` on PS3 (likely different settings, not just endianness).
 - The PS3 side adds `PARAM.SFO`/PNGs and (on real hardware) likely a signature/hash; PS2 adds `icon.sys`/`.ico`.
