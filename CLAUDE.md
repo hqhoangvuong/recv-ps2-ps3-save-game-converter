@@ -19,11 +19,16 @@ This repository contains **no source code, build system, tests, or README** — 
 
 ## Verified PS2 ↔ PS3 mapping (derived by diffing the samples; no public format docs were found online)
 
-- **Slot layout is identical.** `DATA0.DAT[8:]` is 15 consecutive 2104-byte slots followed by a 308-byte tail; PS2 `SAVEDATA-NN` is slot NN. The PS3 sample has only slot 0 populated (others all zero); the PS2 sample has slots 0–7 populated, 8–14 empty.
+- **Slot layout is identical.** `DATA0.DAT[8:]` is 15 consecutive 2104-byte slots followed by a 308-byte tail; PS2 `SAVEDATA-NN` is slot NN. The PS3 sample has only slot 0 populated (others all zero); `PS2/BASLUS-20184/` has slots 0–7 populated, `PS2/BASLUS-20184-Same-Save-As-PS3/` only slot 0.
 - **Endianness:** multi-byte integers are little-endian on PS2 and big-endian on PS3, so converting is a per-field byte reversal. In slot 0, 28 of the 37 non-zero 32-bit words are exactly the reversed PS2 word, and the u16 pairs inside words swap order too (a full 4-byte reversal of the word — e.g. PS2 `01 00 37 00` → PS3 `00 37 00 01`).
 - **Not swapped:** word at offset 8 is four u8 fields (`00 00 01 00` is identical on both; across PS2 slots byte 9 and 10 vary, e.g. `00 04 08 00`, `00 03 0b 00`). Any u8 arrays/strings must be left as-is, so a blanket word swap is wrong — a per-field map is needed.
 - **Slot header:** u32 @0 = `0x0a` in every slot (version/magic); u32 @4 = slot id (PS2 slots hold 1,2,4,5,6,7,8,9 — slot 0 → 1, and ids are not contiguous at slot 3).
 - **Checksum (PS2, verified on all 8 populated slots):** u32 LE at offset 2100 = sum of bytes `[0, 2100)` & 0xFFFF. The PS3 sample's slot 0 has **0** there (its byte sum is 0x147b), so PS3 does not store this checksum at the same place — don't assume it is needed or absent without testing in RPCS3/hardware.
-- **Caveat:** the PS3 and PS2 slot 0 are different game states, not the same save, so 7 words (offsets 468, 2036, 2052, 2060, 2064, 2084, 2100) differ in value and cannot be told apart from layout differences. The last ~68 bytes of a slot (2036–2103) are where they cluster. A same-state pair (export the same save from PS2 and PS3) is needed to resolve this.
+- **Same-state pair (`PS2/BASLUS-20184-Same-Save-As-PS3/SAVEDATA-00` vs `DATA0.DAT` slot 0; first typewriter, Prison B1, 30 handgun bullets/knife/lighter/manual):** of the 36 non-zero words, 29 are exact 4-byte reversals, so the layout/endianness claim above is confirmed. The rest:
+  - offset 8 (u8 ×4) and offset 2068 (`01 00 00 00`/`01 00 00 00` — identical bytes, so also not swapped; likely u8 flags).
+  - offset 468: PS2 `00 00 00 08` vs PS3 `48 00 00 00` — a reversal would give `08 00 00 00`; PS3 has an extra 0x40 bit set (unexplained, possibly an HD-version flag).
+  - offsets 2052, 2060 (float-looking: 8.5 vs ≈8.66, −24.04 vs ≈−23.09), 2064, 2084: differ in value. Both saves are at the same typewriter but were taken separately, so these are probably timers/counters/position values, not layout — unconfirmed. Offsets 2052–2084 hold the same kind of fields in both.
+  - offset 2100: PS2 checksum (stored 5023 = 0x139f, again equal to the byte sum) vs 0 on PS3.
+  The inventory (items/ammo) is encoded in the tables around offsets 500–640 (u16/u8 pairs); those words reverse cleanly and no inventory-related difference exists between the consoles.
 - **Tail / `BASLUS-20184` file:** the 52-byte PS2 settings file corresponds to the first 52 bytes of the PS3 308-byte tail (the rest is zero); byte 15 is `01` in both (not swapped), while the word at 48 is `1` on PS2 and `6` on PS3 (likely different settings, not just endianness).
 - The PS3 side adds `PARAM.SFO`/PNGs and (on real hardware) likely a signature/hash; PS2 adds `icon.sys`/`.ico`.
