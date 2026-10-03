@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## State of the repo
 
-This repository contains **no source code, build system, tests, or README** — only sample save-game data (single commit, "first commit"). Its stated purpose (from the name) is converting Resident Evil Code: Veronica X saves between PS2 and PS3 formats. There are no build/lint/test commands; any converter must be written from scratch. No `xxd` is installed; use `od -A d -t x1 <file>` or Python for binary inspection.
+This repository holds sample save-game data plus one stdlib-only Python script, `ps2_to_ps3.py` (no build system, tests or README). Its purpose is converting Resident Evil Code: Veronica X saves between PS2 and PS3 formats; only PS2 → PS3 is implemented. No `xxd` is installed; use `od -A d -t x1 <file>` or Python for binary inspection.
 
 ## Sample data (reference inputs for the converter)
 
@@ -35,4 +35,4 @@ This repository contains **no source code, build system, tests, or README** — 
 
 ## Converter
 
-`ps2_to_ps3.py SRC_DIR OUT_DIR` (stdlib only) implements the rules above; header, tail, `PARAM.SFO` and PNGs are copied from `PS3/NPUB304670/`. Check against the same-state pair: output vs `PS3/NPUB304670/DATA0.DAT` differs only at slot offsets 468, 2052, 2060, 2064, 2084 (the known unexplained words). Untested on real PS3/RPCS3.
+`ps2_to_ps3.py SRC_DIR OUT_DIR` (stdlib only) implements the rules above; header, tail, `PARAM.SFO` and PNGs are copied from `PS3/NPUB304670/`. Check against the same-state pair: output vs `PS3/NPUB304670/DATA0.DAT` differs only at slot offsets 468, 2052, 2060, 2064, 2084 (the known unexplained words). The user confirmed a converted save (`PS3-converted/NPUB304670/`) loads and works; which emulator or console was not stated, and the unexplained words above were not isolated.
